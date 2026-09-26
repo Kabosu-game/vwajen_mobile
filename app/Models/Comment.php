@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\PurgesCompletely;
 
 class Comment extends Model
 {
-    use SoftDeletes;
+    use PurgesCompletely;
 
     protected $guarded = ['id'];
 

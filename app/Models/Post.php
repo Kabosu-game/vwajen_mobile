@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\PurgesCompletely;
 
 /** Une « Vwa » : publication du réseau social. */
 class Post extends Model
 {
-    use Interactable, SoftDeletes;
+    use Interactable, PurgesCompletely;
 
     protected $guarded = ['id'];
 

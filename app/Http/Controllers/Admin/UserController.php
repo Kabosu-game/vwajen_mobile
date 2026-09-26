@@ -40,7 +40,7 @@ class UserController extends Controller
         $audit = AuditLog::where(fn ($q) => $q->where('subject_type', 'user')->where('subject_id', $user->id))->orWhere('user_id', $user->id)
             ->with('user')->latest('id')->limit(30)->get();
         $counts = [
-            'posts' => $user->posts()->withTrashed()->count(), 'videos' => $user->videos()->count(), 'comments' => Comment::where('user_id', $user->id)->count(),
+            'posts' => $user->posts()->count(), 'videos' => $user->videos()->count(), 'comments' => Comment::where('user_id', $user->id)->count(),
             'reports_made' => Report::where('reporter_id', $user->id)->count(),
         ];
 

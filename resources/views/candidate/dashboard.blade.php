@@ -88,9 +88,9 @@
                     <div class="table-wrap"><table class="table"><thead><tr><th>{{ __('Texte') }}</th><th>{{ __('Date') }}</th><th>{{ __('Vues') }}</th><th>{{ __('Likes') }}</th><th>{{ __('Comm.') }}</th><th>{{ __('Reposts') }}</th><th></th></tr></thead><tbody>
                         @forelse($items as $p)
                             <tr><td style="max-width:320px"><a href="{{ $p->url() }}" class="truncate" style="display:block">{{ \Illuminate\Support\Str::limit($p->body ?: __('(média)'), 70) }}</a>
-                                @if($p->trashed())<span class="badge badge-danger">{{ __('Supprimée') }}</span>@elseif($p->is_hidden)<span class="badge badge-warning">{{ __('Masquée') }}</span>@endif</td>
+                                @if($p->is_hidden)<span class="badge badge-warning">{{ __('Masquée') }}</span>@endif</td>
                                 <td class="small">{{ $p->created_at->format('d/m/Y') }}</td><td>{{ $p->views_count }}</td><td>{{ $p->likes_count }}</td><td>{{ $p->comments_count }}</td><td>{{ $p->reposts_count }}</td>
-                                <td class="actions-cell">@unless($p->trashed())<a href="{{ route('posts.edit', $p) }}" class="btn btn-ghost btn-sm">{{ __('Modifier') }}</a>@endunless</td></tr>
+                                <td class="actions-cell"><a href="{{ route('posts.edit', $p) }}" class="btn btn-ghost btn-sm">{{ __('Modifier') }}</a></td></tr>
                         @empty <tr><td colspan="7" class="muted">{{ __('Aucune publication.') }}</td></tr> @endforelse
                     </tbody></table></div></div>{{ $items->links() }}
             @endif

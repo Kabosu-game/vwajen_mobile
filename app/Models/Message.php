@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\PurgesCompletely;
 use Illuminate\Support\Facades\Storage;
 
 class Message extends Model
 {
-    use SoftDeletes;
+    use PurgesCompletely;
 
     protected $guarded = ['id'];
 

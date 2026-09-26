@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\PurgesCompletely;
 use Illuminate\Support\Facades\Storage;
 
 /** Vwajèn Live (vidéo) ou Audio Space (audio). */
 class Live extends Model
 {
-    use Interactable, SoftDeletes;
+    use Interactable, PurgesCompletely;
 
     protected $guarded = ['id'];
 

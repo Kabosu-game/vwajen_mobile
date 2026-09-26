@@ -24,17 +24,12 @@ class ContentController extends Controller
         abort_unless(isset(self::TYPES[$type]), 404);
         $class = Morph::classFor(self::TYPES[$type]);
         $q = $class::query();
-        if (method_exists($class, 'bootSoftDeletes')) {
-            $q->withTrashed();
-        }
         $q->when($type === 'shorts', fn ($q) => $q->where('kind', 'short'))
             ->when($type === 'videos', fn ($q) => $q->where('kind', '!=', 'short'));
 
         $state = $request->query('state');
         if ($state === 'hidden') {
             $q->where('is_hidden', true);
-        } elseif ($state === 'deleted' && method_exists($class, 'bootSoftDeletes')) {
-            $q->onlyTrashed();
         } elseif ($state === 'reported') {
             $q->whereHas('reports', fn ($r) => $r->where('status', 'pending'));
         }
@@ -57,7 +52,7 @@ class ContentController extends Controller
     public function action(Request $request, string $type, int $id, string $action, ModerationService $moderation)
     {
         $morph = self::TYPES[$type] ?? $type;
-        $model = Morph::find($morph, $id, true);
+        $model = Morph::find($morph, $id);
         abort_unless($model, 404);
         // Un champ « Motif » laissé vide arrive à null (ConvertEmptyStringsToNull) : on retombe sur le motif par défaut.
         $reason = trim((string) $request->input('reason')) ?: __('Décision de modération');

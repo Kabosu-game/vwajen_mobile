@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PurgesCompletely;
 use App\Models\Concerns\Interactable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Answer extends Model
 {
-    use Interactable;
+    use Interactable, PurgesCompletely;
 
     protected $guarded = ['id'];
 

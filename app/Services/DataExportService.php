@@ -19,12 +19,12 @@ class DataExportService
             'candidate_profile' => $user->candidateProfile?->toArray(),
             'organization_profile' => $user->organizationProfile?->toArray(),
             'official_profile' => $user->officialProfile?->toArray(),
-            'posts' => $user->posts()->withTrashed()->with('media', 'poll.options')->get()->toArray(),
+            'posts' => $user->posts()->with('media', 'poll.options')->get()->toArray(),
             'comments' => DB::table('comments')->where('user_id', $user->id)->get(),
             'likes' => DB::table('likes')->where('user_id', $user->id)->get(),
             'bookmarks' => DB::table('bookmarks')->where('user_id', $user->id)->get(),
             'reposts' => DB::table('reposts')->where('user_id', $user->id)->get(),
-            'videos' => $user->videos()->withTrashed()->get()->toArray(),
+            'videos' => $user->videos()->get()->toArray(),
             'lives' => $user->lives()->get()->toArray(),
             'events' => $user->events()->get()->toArray(),
             'event_rsvps' => DB::table('event_rsvps')->where('user_id', $user->id)->get(),
@@ -57,8 +57,8 @@ class DataExportService
         $disk = Storage::disk('public');
         $files = array_filter(array_merge(
             [$user->avatar, $user->cover],
-            $user->posts()->withTrashed()->with('media')->get()->flatMap(fn ($p) => $p->media->pluck('path'))->all(),
-            $user->videos()->withTrashed()->pluck('path')->all(),
+            $user->posts()->with('media')->get()->flatMap(fn ($p) => $p->media->pluck('path'))->all(),
+            $user->videos()->pluck('path')->all(),
         ));
         foreach ($files as $f) {
             if (! str_starts_with($f, 'http') && $disk->exists($f)) {

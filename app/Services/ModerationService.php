@@ -67,11 +67,9 @@ class ModerationService
         AuditLogger::log('content.hide', $content, ['reason' => $reason]);
     }
 
+    /** Ré-affiche un contenu masqué (un contenu supprimé, lui, n'existe plus). */
     public function restore(Model $content, User $moderator): void
     {
-        if (method_exists($content, 'trashed') && $content->trashed()) {
-            $content->restore();
-        }
         if (array_key_exists('is_hidden', $content->getAttributes())) {
             $content->forceFill(['is_hidden' => false])->save();
         }
@@ -81,12 +79,14 @@ class ModerationService
         AuditLogger::log('content.restore', $content);
     }
 
+    /** Suppression définitive (contenu, interactions et fichiers) — non restaurable. */
     public function remove(Model $content, User $moderator, string $reason, ?Report $report = null): void
     {
         $owner = $this->ownerOf($content);
-        method_exists($content, 'trashed') ? $content->delete() : $content->forceFill(['is_hidden' => true])->save();
+        // Sanction et journal d'audit enregistrés avant l'effacement, tant que le contenu existe encore.
         $this->sanction($owner, $moderator, 'content_removal', $reason, null, $content, $report);
-        AuditLogger::log('content.remove', $content, ['reason' => $reason]);
+        AuditLogger::log('content.remove', $content, ['reason' => $reason, 'excerpt' => mb_substr((string) $this->textOf($content), 0, 200)]);
+        DB::transaction(fn () => $content->delete());
     }
 
     public function sanction(?User $user, User $moderator, string $type, string $reason, ?\DateTimeInterface $expires = null, ?Model $content = null, ?Report $report = null): ?Sanction

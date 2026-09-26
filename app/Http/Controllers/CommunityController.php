@@ -80,7 +80,7 @@ class CommunityController extends Controller
         $slug = Str::slug($data['name']) ?: 'communaute';
         $base = $slug;
         $i = 1;
-        while (Community::withTrashed()->where('slug', $slug)->exists() || $slug === 'create') {
+        while (Community::where('slug', $slug)->exists() || $slug === 'create') {
             $slug = $base.'-'.$i++;
         }
         $data['avatar'] = $request->hasFile('avatar') ? $media->storeImage($request->file('avatar'), 'communities', 400) : null;

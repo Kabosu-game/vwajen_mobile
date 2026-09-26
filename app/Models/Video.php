@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\PurgesCompletely;
 use Illuminate\Support\Facades\Storage;
 
 /** Vidéo longue, Short (vidéo verticale courte) ou replay de live / débat. */
 class Video extends Model
 {
-    use Interactable, SoftDeletes;
+    use Interactable, PurgesCompletely;
 
     protected $guarded = ['id'];
 

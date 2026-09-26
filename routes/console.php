@@ -81,13 +81,12 @@ Artisan::command('vwajen:purge-accounts', function () {
             foreach (array_filter([$user->avatar, $user->cover]) as $f) {
                 $disk->delete($f);
             }
-            foreach ($user->posts()->withTrashed()->with('media')->get() as $post) {
-                foreach ($post->media as $m) {
-                    $disk->delete(array_filter([$m->path, $m->thumbnail]));
+            // Chaque contenu est supprimé via son modèle pour effacer aussi ses fichiers et interactions (ContentPurger).
+            foreach (App\Support\Morph::MAP as $class) {
+                if (in_array(App\Models\Concerns\PurgesCompletely::class, class_uses_recursive($class), true)) {
+                    $owner = $class === App\Models\Community::class ? 'owner_id' : 'user_id';
+                    $class::where($owner, $user->id)->orderByDesc('id')->get()->each->delete();
                 }
-            }
-            foreach ($user->videos()->withTrashed()->get() as $v) {
-                $disk->delete(array_filter(array_merge([$v->path, $v->thumbnail], array_values($v->qualities ?? []))));
             }
             Storage::disk('local')->deleteDirectory('verifications/'.$user->id);
             DB::table('sessions')->where('user_id', $user->id)->delete();

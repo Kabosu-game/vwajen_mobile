@@ -107,7 +107,9 @@
   // ---------------------------------------------------------------- Confirmation
   document.addEventListener('submit', (e) => {
     const f = e.target;
-    if (f.dataset.confirm && !confirm(f.dataset.confirm)) { e.preventDefault(); e.stopImmediatePropagation(); }
+    // Le bouton cliqué peut porter son propre message (ex. suppression définitive), prioritaire sur celui du formulaire.
+    const msg = (e.submitter && e.submitter.dataset.confirm) || f.dataset.confirm;
+    if (msg && !confirm(msg)) { e.preventDefault(); e.stopImmediatePropagation(); }
   }, true);
 
   // ---------------------------------------------------------------- Actions génériques (like, repost, enregistrement, masquer…)

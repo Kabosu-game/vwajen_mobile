@@ -90,7 +90,8 @@ class FlowTest extends TestCase
         $this->assertNotNull($post->fresh()->edited_at);
         $this->assertSame(1, $post->edits()->count());
         $this->deleteJson("/v/{$post->id}")->assertJson(['deleted' => true]);
-        $this->assertSoftDeleted('posts', ['id' => $post->id]);
+        $this->assertDatabaseMissing('posts', ['id' => $post->id]); // suppression définitive par l'auteur aussi
+        $this->assertDatabaseMissing('likes', ['likeable_type' => 'post', 'likeable_id' => $post->id]);
     }
 
     public function test_block_hides_content_and_prevents_messages(): void
@@ -149,6 +150,38 @@ class FlowTest extends TestCase
         $live = Live::firstOrFail();
         $this->actingAs($admin)->post("/admin/content/lives/{$live->id}/delete", ['reason' => ''])->assertRedirect();
         $this->assertDatabaseHas('audit_logs', ['action' => 'content.remove']);
+        $this->assertDatabaseMissing('lives', ['id' => $live->id]);
+    }
+
+    public function test_deletion_is_permanent_with_interactions(): void
+    {
+        Storage::fake('public');
+        $this->actingAs($this->user('wilnerj'))->post('/posts', ['body' => 'À supprimer #test', 'images' => [UploadedFile::fake()->image('x.jpg', 800, 600)], 'alts' => ['x']])->assertRedirect();
+        $post = Post::latest('id')->firstOrFail();
+        $file = $post->media()->value('path');
+        Storage::disk('public')->assertExists($file);
+
+        $fan = $this->user('jeanmarc');
+        $this->actingAs($fan)->postJson("/i/post/{$post->id}/like")->assertJson(['active' => true]);
+        $this->actingAs($fan)->postJson("/i/post/{$post->id}/bookmark")->assertJson(['active' => true]);
+        $this->actingAs($fan)->postJson("/i/post/{$post->id}/comments", ['body' => 'Commentaire qui doit disparaître'])->assertOk();
+        $comment = \App\Models\Comment::where('commentable_type', 'post')->where('commentable_id', $post->id)->latest('id')->firstOrFail();
+        $this->actingAs($this->user('nadege_l'))->postJson("/comments/{$comment->id}/like")->assertOk();
+
+        $this->actingAs($this->user('vwajen'))->post("/admin/content/posts/{$post->id}/delete", ['reason' => 'Test'])->assertRedirect();
+
+        $this->assertDatabaseMissing('posts', ['id' => $post->id]);
+        $this->assertDatabaseMissing('post_media', ['post_id' => $post->id]);
+        $this->assertDatabaseMissing('bookmarks', ['bookmarkable_type' => 'post', 'bookmarkable_id' => $post->id]);
+        $this->assertDatabaseMissing('hashtaggables', ['hashtaggable_type' => 'post', 'hashtaggable_id' => $post->id]);
+        Storage::disk('public')->assertMissing($file);
+        $this->assertDatabaseMissing('comments', ['id' => $comment->id]);
+        $this->assertDatabaseMissing('likes', ['likeable_type' => 'post', 'likeable_id' => $post->id]);
+        $this->assertDatabaseMissing('likes', ['likeable_type' => 'comment', 'likeable_id' => $comment->id]);
+        $this->assertSame(0, \Illuminate\Support\Facades\DB::table('notifications')->where('data->subject_type', 'post')->where('data->subject_id', $post->id)->count());
+        // Plus de filtre « Supprimés » ni de restauration : la page du contenu n'existe plus.
+        $this->actingAs($this->user('vwajen'))->post("/admin/content/posts/{$post->id}/restore")->assertNotFound();
+        $this->get($post->url())->assertNotFound();
     }
 
     public function test_messaging_direct_and_group(): void

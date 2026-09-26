@@ -51,7 +51,7 @@ class CandidateDashboardController extends Controller
         $viewData = compact('user', 'profile', 'section', 'stats', 'followersChart');
 
         $viewData += match ($section) {
-            'posts' => ['items' => Post::where('user_id', $user->id)->withTrashed()->latest()->paginate(20)],
+            'posts' => ['items' => Post::where('user_id', $user->id)->latest()->paginate(20)],
             'videos' => ['items' => Video::where('user_id', $user->id)->longs()->latest()->paginate(20)],
             'shorts' => ['items' => Video::where('user_id', $user->id)->shorts()->latest()->paginate(20)],
             'lives' => ['items' => Live::where('user_id', $user->id)->latest()->paginate(20)],
