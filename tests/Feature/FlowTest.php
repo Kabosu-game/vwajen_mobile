@@ -144,6 +144,11 @@ class FlowTest extends TestCase
         $this->actingAs($admin)->post("/admin/content/posts/{$post->id}/restore")->assertRedirect();
         $this->assertFalse($post->fresh()->is_hidden);
         $this->assertDatabaseHas('audit_logs', ['action' => 'content.hide']);
+
+        // Supprimer avec le champ « Motif » laissé vide (arrive à null) : motif par défaut, pas d'erreur 500
+        $live = Live::firstOrFail();
+        $this->actingAs($admin)->post("/admin/content/lives/{$live->id}/delete", ['reason' => ''])->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'content.remove']);
     }
 
     public function test_messaging_direct_and_group(): void

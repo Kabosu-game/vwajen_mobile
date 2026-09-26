@@ -49,6 +49,6 @@ class ReportController extends Controller
             return response()->json(['message' => $message]);
         }
 
-        return redirect()->to($request->input('return', url('/')))->with('status', $message);
+        return redirect()->to($request->input('return') ?: url('/'))->with('status', $message);
     }
 }

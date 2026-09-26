@@ -59,7 +59,8 @@ class ContentController extends Controller
         $morph = self::TYPES[$type] ?? $type;
         $model = Morph::find($morph, $id, true);
         abort_unless($model, 404);
-        $reason = $request->input('reason', __('Décision de modération'));
+        // Un champ « Motif » laissé vide arrive à null (ConvertEmptyStringsToNull) : on retombe sur le motif par défaut.
+        $reason = trim((string) $request->input('reason')) ?: __('Décision de modération');
 
         match ($action) {
             'hide' => $moderation->hide($model, $request->user(), $reason),
